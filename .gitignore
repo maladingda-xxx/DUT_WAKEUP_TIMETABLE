@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcarchive
+xcuserdata/
+
+# 打包产物（IPA 通过 GitHub Releases 分发，不入库）
+dist/
+*.ipa

@@ -4,13 +4,19 @@
 
 课程表浏览是核心，另外可以**用学号直接登录大工教务系统，一键把整学期课表导进来**，支持上课提醒和桌面小组件。
 
-本仓库**没有上架 App Store（没有开发者账号）**，需要你按下面的步骤用 Xcode 自己编译并安装到 iPhone（对个人开发者来说，这是把自用 App 装进手机的标准做法，整个过程 10 分钟左右）。
+本仓库**没有上架 App Store（没有开发者账号）**，提供两种安装方式：
+
+- **方式一（推荐，约 3 分钟）**：到 [Releases](https://github.com/maladingda-xxx/DUT_WAKEUP_TIMETABLE/releases) 下载 `.ipa`，用 Sideloadly / AltStore 等工具以自己的 Apple ID 重签安装。见 [方式一](#方式一下载-ipa-侧载安装推荐)。
+- **方式二**：克隆源码，用 Xcode 自己编译并安装到 iPhone（对个人开发者来说，这是把自用 App 装进手机的标准做法，整个过程 10 分钟左右）。见 [一、安装前你需要准备什么](#一安装前你需要准备什么)。
+
+> 下载的 IPA 是**未签名**的，必须由安装者用自己的 Apple ID 重新签名；免费账号签名的 App 只有 7 天有效期。这是没有上架 App Store 的 App 分发给他人时的标准做法。
 
 ---
 
 ## 目录
 
-- [一、安装前你需要准备什么](#一安装前你需要准备什么)
+- [方式一：下载 IPA 侧载安装（推荐）](#方式一下载-ipa-侧载安装推荐)
+- [一、安装前你需要准备什么](#一安装前你需要准备什么)（源码编译）
 - [二、把 App 装到你的 iPhone 上（源码编译）](#二把-app-装到你的-iphone-上源码编译)
 - [三、首次使用：导入你的课表](#三首次使用导入你的课表)
 - [四、桌面小组件（需要自己接一下）](#四桌面小组件需要自己接一下)
@@ -18,6 +24,39 @@
 - [六、项目结构](#六项目结构)
 - [七、技术栈](#七技术栈)
 - [八、声明](#八声明)
+
+---
+
+## 方式一：下载 IPA 侧载安装（推荐）
+
+> 适合不想装 Xcode、只想把 App 装到手机上的同学。安装包是**未签名**的，需要你用自己的 Apple ID 重新签名后安装。
+
+### 1. 下载
+
+到 [Releases](https://github.com/maladingda-xxx/DUT_WAKEUP_TIMETABLE/releases) 页面，下载最新版本的：
+
+```
+WakeUp-Timetable-v1.0.0-unsigned.ipa
+```
+
+### 2. 用 Sideloadly / AltStore 安装
+
+任选其一：
+
+- **Sideloadly**（Windows / macOS，最省事）：安装后把 IPA 拖进窗口 → 填入你的 Apple ID → 用数据线连接 iPhone → 点 **Start**。iPhone 端到 **设置 → 通用 → VPN 与设备管理** 信任证书即可。
+- **AltStore / SideStore**：先按官网教程在电脑上装好 AltServer（或配置好 SideStore），再在手机端 AltStore 里点 `+` 选择下载好的 IPA。
+
+### 3. 注意事项
+
+| 事项 | 说明 |
+|------|------|
+| 系统要求 | **iOS 26.5 及以上**，低于此版本无法安装 |
+| 有效期 | 免费 Apple ID 签名的 App **7 天后失效**，需重新签一次；付费开发者账号可签 1 年 |
+| 桌面小组件 | 当前 Release 构建**不包含小组件**（工程里尚未接入 Widget target） |
+| App Group | 安装包不携带 App Group 权限；App 已做沙盒回退，不会闪退，但小组件无法与主 App 共享数据 |
+| 数据安全 | 课程数据只保存在本机，卸载 App 会一并删除 |
+
+> 想用小组件、或想获得更长有效期，请使用付费 Apple 开发者账号，并按下面「方式二」的源码步骤自行签名。
 
 ---
 
@@ -73,7 +112,7 @@ open wake-up-timeTable.xcodeproj
 group.com.dingjiayuan.wake-up-timeTable
 ```
 
-**这个分组归属于原作者的开发者账号，你无法直接使用**，必须换成你自己的。需要改 **两处**（如果两处不一致，App 会在启动时直接闪退）：
+**这个分组归属于原作者的开发者账号，你无法直接使用**，必须换成你自己的。需要改 **两处**（两处字符串必须一致，否则小组件读不到数据；App 会自动回退到沙盒目录，不会闪退）：
 
 1. **Entitlements 文件**：`wake-up-timeTable/wake_up_timeTable.entitlements`
 
@@ -92,9 +131,9 @@ group.com.dingjiayuan.wake-up-timeTable
    static let appGroupIdentifier = "group.com.yourname.wakeup.timetable"
    ```
 
-> ⚠️ **免费 Apple ID 的坑**：App Groups 属于**付费开发者账号（$99/年）才有的能力**。用免费账号时，Xcode 会报类似 `App Groups capability is not supported` / 无法注册分组，而且本项目在 `Constants.swift` 里对 App Group 容器做了强制解包，**即使侥幸编译通过，启动时也会闪退**。
+> ⚠️ **免费 Apple ID 的坑**：App Groups 属于**付费开发者账号（$99/年）才有的能力**。用免费账号时，Xcode 会报类似 `App Groups capability is not supported` / 无法注册分组，需要在 entitlements 里移除 App Groups。
 >
-> 只想自己试用、不打算买开发者账号的话，需要自己动手改造：把 `Constants.swift` 里的 `appGroupContainerURL` 从 `FileManager.containerURL(forSecurityApplicationGroupIdentifier:)` 改成普通的沙盒目录（如 `FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]`），并移除 entitlements 里的 App Groups。代价是**小组件无法和主 App 共享数据**。
+> 本项目在 `Constants.swift` 里已经对 App Group 不可用的情况做了**沙盒回退**（自动改用 `Application Support` 目录），因此移除后 App 仍可正常启动使用，代价只是**小组件无法和主 App 共享数据**。
 
 ### 步骤 5 · 连接 iPhone 并打开开发者模式
 
@@ -173,8 +212,8 @@ App 装好后，按这个顺序操作就能看到自己的课表：
 **Q：提示 App Groups 能力不可用 / 无法创建分组**
 这是免费 Apple ID 的限制。要么加入付费开发者计划，要么按 [步骤 4](#步骤-4--处理-app-groups最容易踩坑的一步) 的说明改造代码去掉 App Group 依赖（代价是小组件不可用）。
 
-**Q：App 一打开就闪退**
-九成是 App Group 配置不一致。请检查 `Constants.swift` 里的 `appGroupIdentifier` 和 `wake_up_timeTable.entitlements` 里的字符串是否**完全一致**，且这个分组已在你的账号下创建成功。
+**Q：App 能打开，但桌面小组件不显示数据**
+九成是 App Group 配置不一致。请检查 `Constants.swift` 里的 `appGroupIdentifier` 和 `wake_up_timeTable.entitlements` 里的字符串是否**完全一致**，且这个分组已在你的账号下创建成功。App 在拿不到 App Group 时会自动回退到沙盒目录，所以不会闪退，但小组件读不到主 App 的数据。
 
 **Q：手机上提示「未受信任的开发者」/ 无法打开 App**
 到 **设置 → 通用 → VPN 与设备管理** 里信任你的开发者证书（见步骤 7）。

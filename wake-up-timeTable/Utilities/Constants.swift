@@ -14,10 +14,25 @@ enum Constants {
     static let appGroupIdentifier = "group.com.dingjiayuan.wake-up-timeTable"
 
     /// App Group 共享目录 URL
+    ///
+    /// 如果当前签名环境不支持 App Group（例如用免费 Apple ID 侧载安装），
+    /// 则回退到 App 自身的沙盒目录，保证主 App 可以正常启动；
+    /// 代价是桌面小组件无法读取数据。
     static var appGroupContainerURL: URL {
-        FileManager.default.containerURL(
+        if let url = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: appGroupIdentifier
-        )!
+        ) {
+            return url
+        }
+        let fallback = FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        )[0]
+        try? FileManager.default.createDirectory(
+            at: fallback,
+            withIntermediateDirectories: true
+        )
+        return fallback
     }
 
     /// SwiftData 共享数据库 URL
